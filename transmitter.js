@@ -1,38 +1,46 @@
-/* STARK RF TRANSMITTER v4.5 - TACTICAL PAYLOAD ENGINE */
+/* STARK RF TRANSMITTER v6.0 - HARDWARE-LINKED PAYLOAD ENGINE 
+   Optimized for: ESP32-C3 + HC-12 (UART Replay Mode)
+*/
 
 const Transmitter = {
     isTransmitting: false,
     queue: [],
 
-    // 1. نظام إرسال النبضات المتطور (Replay & Injection)
+    // 1. محرك إعادة الإرسال (The Replay Engine)
     executeReplay: async function(hexID, pulseWidth) {
         if (!hexID || hexID === "null") {
-            logToTerminal("STRIKE_CANCELLED: NO_VALID_TARGET_ID", "error");
+            logToTerminal("STRIKE_FAILED: NO_TARGET_HEX_LOCKED", "error");
             return;
         }
 
-        // تحضير الـ Payload العسكري
-        const payload = `TX_REQ:${hexID}:${pulseWidth}:5\n`; // الرقم 5 يعني كرر الإرسال 5 مرات لضمان الاختراق
-        this.addToQueue(payload, `REPLAY_STRIKE_ID_${hexID}`);
+        // الصيغة المطابقة لكود الـ C++: ATK:HEX:PULSE
+        // مثال: ATK:A1B2C3:450
+        const cleanHex = hexID.replace('0x', '');
+        const payload = `ATK:${cleanHex}:${pulseWidth}\n`;
+        
+        this.addToQueue(payload, `STRIKE_EXE: 0x${cleanHex}`);
     },
 
-    // 2. نظام التشويش النبضي (Deceptive Jamming)
+    // 2. نظام التشويش (Tactical Jammer Control)
     setJammerMode: async function(active) {
-        const mode = active ? "JAM_PROC:ON:433.92\n" : "JAM_PROC:OFF\n";
-        this.addToQueue(mode, active ? "JAMMER_ARMED" : "JAMMER_DISARMED");
+        // الصيغة المطابقة لكود الـ C++: JAM:ON
+        const command = active ? "JAM:ON\n" : "JAM:OFF\n";
+        this.addToQueue(command, active ? "JAMMER_ARMED" : "JAMMER_DISARMED");
 
         // تحديث HUD الواجهة
         const statusElement = document.getElementById('conn-status');
         if (active) {
-            statusElement.innerText = "JAMMING_IN_PROGRESS";
-            statusElement.classList.add('danger-glow'); // تأثير CSS للموجات الحمراء
+            statusElement.innerText = "ACTIVE_JAMMING_MODE";
+            statusElement.classList.add('danger-glow');
+            logToTerminal("WARNING: RF_INTERFERENCE_SEQUENCE_STARTED", "error");
         } else {
-            statusElement.innerText = "SYSTEM_READY";
+            statusElement.innerText = "HARDWARE_STRIKE_LINK_ARMED";
             statusElement.classList.remove('danger-glow');
+            logToTerminal("INFO: JAMMER_DEACTIVATED", "success");
         }
     },
 
-    // 3. مدير الطابور (The Dispatcher)
+    // 3. مدير الطابور الذكي (The Dispatcher)
     addToQueue: function(command, label) {
         this.queue.push({ command, label });
         if (!this.isTransmitting) {
@@ -51,19 +59,20 @@ const Transmitter = {
 
         try {
             await this.rawTransmit(task.command);
-            logToTerminal(`COMMAND_EXECUTED: ${task.label}`, "success");
+            // لاحظ: التأكيد الحقيقي بييجي من الهاردوير وبيظهر في التيرمينال عبر الـ core.js
+            logToTerminal(`PAYLOAD_SENT: ${task.label}`, "info");
         } catch (err) {
-            logToTerminal(`TRANSMISSION_ERROR: ${err}`, "error");
+            logToTerminal(`TX_CRITICAL_FAILURE: ${err.message}`, "error");
         }
 
-        // فاصل زمني بسيط بين النبضات لمنع تداخل الترددات
-        setTimeout(() => this.processQueue(), 100);
+        // انتظار 200ms بين الأوامر لضمان معالجة الـ ESP32 للـ Replay (لأن فيه Loop 10 مرات)
+        setTimeout(() => this.processQueue(), 200);
     },
 
-    // 4. المحرك الخام للإرسال (The Driver)
+    // 4. السائق الخام (Low-Level Serial Writer)
     rawTransmit: async function(data) {
         if (!STARK_SYSTEM.port || !STARK_SYSTEM.port.writable) {
-            throw new Error("HARDWARE_OFFLINE");
+            throw new Error("HARDWARE_DISCONNECTED");
         }
 
         const encoder = new TextEncoder();
@@ -77,9 +86,9 @@ const Transmitter = {
     }
 };
 
-// 5. واجهة التحكم في الهجوم (Global Attack Handler)
+// 5. موزع العمليات القتالية (Global Interaction Layer)
 function executeAttack(type) {
-    // التأكد من أن النظام مربوط ببيانات الـ core.js
+    // جلب أحدث بيانات تم رصدها من الـ Core
     const targetHex = STARK_SYSTEM.lastSignal.hex;
     const targetPulse = STARK_SYSTEM.lastSignal.pulse;
 
