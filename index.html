@@ -1,50 +1,66 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STARK RF FRAMEWORK | C2 PANEL</title>
+    <title>STARK RF | TACTICAL C2 FRAMEWORK</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <header id="top-bar">
-        <div class="logo">STARK_RF_V4</div>
+        <div class="logo">STARK_RF_OS_V5</div>
         <div class="system-status">
-            <span id="conn-status">WAITING_FOR_LINK</span>
-            <button id="connect-btn" class="stark-btn">CONNECT ADAPTER</button>
+            <span id="conn-status">LINK_OFFLINE</span>
+            <button id="connect-btn" class="stark-btn">INITIALIZE ADAPTER</button>
         </div>
     </header>
 
     <main id="tactical-grid">
-        <aside class="tower left-tower" id="protocol-tower">
-            <div class="tower-label">PROTOCOL</div>
+        <aside class="tower" id="protocol-tower">
             <div class="tower-fill" id="proto-fill"></div>
+            <div class="tower-label">PROTO_ANALYSIS</div>
         </aside>
 
         <section id="waterfall-container">
             <canvas id="waterfall-canvas"></canvas>
+            
+            <div id="canvas-overlay">
+                <div class="scanner-line"></div>
+                <div class="coordinate-tag">FREQ: 433.92MHz</div>
+            </div>
         </section>
 
-        <aside class="tower right-tower" id="intensity-tower">
-            <div class="tower-label">INTENSITY</div>
+        <aside class="tower" id="intensity-tower">
             <div class="tower-fill" id="intensity-fill"></div>
+            <div class="tower-label">SIGNAL_STRENGTH</div>
         </aside>
     </main>
 
     <footer id="control-zone">
         <div id="mini-terminal">
-            <div class="log-line">> SYSTEM_READY_V4.0</div>
+            <div class="log-line type-success">>> STARK_SYSTEM_BOOT_SEQUENCE_COMPLETE</div>
+            <div class="log-line">>> WAITING_FOR_HARDWARE_STRIKE_LINK...</div>
         </div>
         
         <div id="action-buttons">
-            <button class="atk-btn replay" onclick="executeAttack('REPLAY')">REPLAY_STRIKE</button>
-            <button class="atk-btn jam" onclick="executeAttack('JAM')">JAMMING_MODE</button>
+            <button class="atk-btn replay" onclick="executeAttack('REPLAY')">
+                <span class="btn-icon">⚡</span> REPLAY_STRIKE
+            </button>
+            <button class="atk-btn jam" id="jam-btn" onclick="executeAttack('JAM')">
+                <span class="btn-icon">🚫</span> TAC_JAMMER
+            </button>
+            <button class="v-action-btn" onclick="Vault.wipeAll()" style="margin-top: 10px; border-color: #444; color: #666;">
+                PURGE_VAULT
+            </button>
         </div>
     </footer>
 
     <script src="vault.js"></script>
     <script src="visualizer.js"></script>
     <script src="transmitter.js"></script>
-    <script src="core.js"></script> </body>
+    <script src="core.js"></script>
+
+</body>
 </html>
