@@ -1,24 +1,30 @@
-/* STARK RF FRAMEWORK v5.5 - TACTICAL HUD DESIGN */
+/* STARK RF FRAMEWORK v6.5 - TACTICAL HUD BATTLE-READY */
 
 :root {
-    --bg-dark: #050505;
-    --panel-bg: rgba(10, 10, 10, 0.9);
+    --bg-dark: #020202;
+    --panel-bg: rgba(10, 10, 10, 0.95);
     --stark-red: #ff0000;
     --stark-cyan: #00ffff;
     --stark-gold: #ffcc00;
     --terminal-green: #00ff41;
-    --danger-glow: rgba(255, 0, 0, 0.4);
-    --scan-line: rgba(0, 255, 255, 0.03);
+    --danger-glow: rgba(255, 0, 0, 0.6);
+    --scan-line: rgba(0, 255, 255, 0.02);
 }
 
-* { box-sizing: border-box; cursor: crosshair; }
+/* Base Terminal Style */
+* { 
+    box-sizing: border-box; 
+    cursor: crosshair; 
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
+}
 
 body {
     background-color: var(--bg-dark);
     background-image: linear-gradient(var(--scan-line) 50%, transparent 50%);
-    background-size: 100% 4px; /* تأثير خطوط المسح العسكرية */
+    background-size: 100% 4px;
     color: #eee;
-    font-family: 'OCR A Extended', 'Courier New', monospace;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
     margin: 0;
     overflow: hidden;
     height: 100vh;
@@ -26,162 +32,176 @@ body {
     flex-direction: column;
 }
 
-/* --- HEADER / TOP BAR --- */
+/* --- CRT SCAN ANIMATION --- */
+body::after {
+    content: " ";
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* --- TOP COMMAND BAR --- */
 #top-bar {
-    height: 60px;
+    height: 65px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 25px;
-    background: black;
-    border-bottom: 2px solid var(--stark-red);
-    box-shadow: 0 5px 20px var(--danger-glow);
-    z-index: 100;
+    padding: 0 30px;
+    background: #000;
+    border-bottom: 3px solid var(--stark-red);
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.2);
+    z-index: 1000;
 }
 
 .logo {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 900;
     color: var(--stark-red);
-    text-shadow: 0 0 10px var(--stark-red);
-    letter-spacing: 5px;
+    text-shadow: 0 0 15px var(--stark-red);
+    letter-spacing: 8px;
+    text-transform: uppercase;
 }
 
 #conn-status {
-    font-size: 0.8rem;
-    margin-right: 20px;
+    font-size: 0.85rem;
     letter-spacing: 2px;
+    color: #555;
+    transition: 0.3s;
 }
 
-/* --- TACTICAL GRID --- */
+/* --- TACTICAL GRID & CANVAS --- */
 #tactical-grid {
     flex: 1;
     display: flex;
-    padding: 15px;
-    gap: 15px;
-    background: radial-gradient(circle at center, #111 0%, #000 100%);
+    padding: 20px;
+    gap: 20px;
+    background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+}
+
+#waterfall-container {
+    flex: 1;
+    border: 1px solid #1a1a1a;
+    position: relative;
+    background: #000;
+    box-shadow: inset 0 0 50px #000;
 }
 
 .tower {
-    width: 70px;
-    background: rgba(0, 0, 0, 0.8);
+    width: 80px;
+    background: rgba(5, 5, 5, 0.9);
     border: 1px solid #222;
     position: relative;
     display: flex;
-    flex-direction: column-reverse; /* البناء من تحت لفوق */
-    box-shadow: inset 0 0 10px #000;
+    flex-direction: column-reverse;
 }
 
-.tower-fill {
-    width: 100%;
-    transition: height 0.15s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-    filter: blur(1px);
-}
+#proto-fill { background: linear-gradient(to top, var(--stark-cyan), transparent); }
+#intensity-fill { background: linear-gradient(to top, var(--stark-red), transparent); }
 
-.tower-label {
-    position: absolute;
-    bottom: -25px;
-    width: 100%;
-    text-align: center;
-    font-size: 10px;
-    color: var(--stark-cyan);
-}
-
-/* --- WATERFALL CONTAINER --- */
-#waterfall-container {
-    flex: 1;
-    border: 1px solid #333;
-    position: relative;
-    background: #000;
-    overflow: hidden;
-    box-shadow: 0 0 30px rgba(0,0,0,1);
-}
-
-/* --- CONTROL ZONE / TERMINAL --- */
+/* --- CONTROL ZONE & VAULT --- */
 #control-zone {
-    height: 250px;
-    background: #080808;
-    border-top: 1px solid #444;
+    height: 280px;
+    background: #050505;
+    border-top: 2px solid #222;
     display: flex;
 }
 
 #mini-terminal {
     flex: 3;
-    padding: 15px;
+    padding: 20px;
     overflow-y: auto;
-    font-size: 13px;
-    border-right: 1px solid #222;
-    scroll-behavior: smooth;
+    background: #000;
+    border-right: 1px solid #1a1a1a;
 }
 
-/* ستايل سجلات الخزنة (The Vault Entries) */
+/* VAULT ENTRY STYLING */
 .vault-entry-row {
-    background: rgba(20, 20, 20, 0.8);
-    border-left: 3px solid var(--stark-cyan);
-    margin-bottom: 5px;
-    padding: 8px;
+    background: rgba(15, 15, 15, 0.8);
+    border-left: 4px solid var(--stark-gold);
+    margin-bottom: 8px;
+    padding: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    animation: slideIn 0.3s ease-out;
+    animation: slideIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
-.v-time { color: #555; font-size: 10px; }
-.v-id { color: var(--stark-gold); font-weight: bold; }
-.v-proto { color: var(--terminal-green); }
+.v-time { color: #444; font-size: 11px; margin-right: 10px; }
+.v-proto { color: var(--stark-cyan); font-weight: bold; font-size: 12px; }
+.v-id { color: var(--stark-gold); font-size: 14px; font-weight: 900; margin-left: 15px; }
 
-/* --- BUTTONS --- */
-.stark-btn, .atk-btn, .v-action-btn {
-    text-transform: uppercase;
-    font-weight: bold;
-    letter-spacing: 1px;
-    transition: 0.2s all;
-    outline: none;
-}
-
-.atk-btn {
-    height: 60px;
-    margin: 5px;
+.v-strike-btn {
     background: transparent;
     border: 1px solid var(--stark-red);
     color: var(--stark-red);
+    padding: 5px 15px;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: 900;
 }
 
-.atk-btn:hover {
+.v-strike-btn:hover {
     background: var(--stark-red);
-    color: white;
-    box-shadow: 0 0 20px var(--stark-red);
+    color: #000;
+    box-shadow: 0 0 15px var(--stark-red);
 }
 
-.v-action-btn {
-    background: #222;
-    border: 1px solid var(--stark-cyan);
-    color: var(--stark-cyan);
-    font-size: 10px;
-    padding: 4px 8px;
+/* --- SYSTEM LOGS --- */
+.log-line {
+    font-size: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
 }
+.type-intercept { color: var(--stark-cyan); background: rgba(0, 255, 255, 0.05); padding: 2px 5px; }
+.type-success { color: var(--terminal-green); }
+.type-error { color: var(--stark-red); font-weight: bold; }
+.t-stamp { color: #333; margin-right: 8px; }
+
+/* --- BUTTONS & ACTIONS --- */
+#action-buttons {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: #080808;
+    gap: 10px;
+}
+
+.atk-btn {
+    flex: 1;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: 1px solid #333;
+    color: #eee;
+}
+
+.replay { border: 1px solid var(--stark-cyan); color: var(--stark-cyan); }
+.replay:hover { background: var(--stark-cyan); color: #000; box-shadow: 0 0 20px var(--stark-cyan); }
+
+.jam { border: 1px solid var(--stark-red); color: var(--stark-red); }
+.jam:hover { background: var(--stark-red); color: #000; box-shadow: 0 0 20px var(--stark-red); }
 
 /* --- ANIMATIONS --- */
 @keyframes slideIn {
-    from { transform: translateX(-20px); opacity: 0; }
+    from { transform: translateX(-50px); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
 
-.pulse-animation {
-    animation: pulse-red 1s infinite;
-}
-
-@keyframes pulse-red {
-    0% { opacity: 1; }
-    50% { opacity: 0.3; }
-    100% { opacity: 1; }
-}
-
 .danger-glow {
-    box-shadow: 0 0 30px var(--stark-red) !important;
-    background: rgba(255, 0, 0, 0.1) !important;
+    text-shadow: 0 0 15px var(--stark-red) !important;
+    color: var(--stark-red) !important;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+.pulse-animation {
+    animation: blinker 1.5s linear infinite;
+}
+
+@keyframes blinker {
+    50% { opacity: 0.2; }
+}
