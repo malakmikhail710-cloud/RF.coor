@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARK RF FRAMEWORK | C2 PANEL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header id="top-bar">
+        <div class="logo">STARK_RF_V4</div>
+        <div class="system-status">
+            <span id="conn-status">WAITING_FOR_LINK</span>
+            <button id="connect-btn" class="stark-btn">CONNECT ADAPTER</button>
+        </div>
+    </header>
+
+    <main id="tactical-grid">
+        <aside class="tower left-tower" id="protocol-tower">
+            <div class="tower-label">PROTOCOL</div>
+            <div class="tower-fill" id="proto-fill"></div>
+        </aside>
+
+        <section id="waterfall-container">
+            <canvas id="waterfall-canvas"></canvas>
+        </section>
+
+        <aside class="tower right-tower" id="intensity-tower">
+            <div class="tower-label">INTENSITY</div>
+            <div class="tower-fill" id="intensity-fill"></div>
+        </aside>
+    </main>
+
+    <footer id="control-zone">
+        <div id="mini-terminal">
+            <div class="log-line">> SYSTEM_READY_V4.0</div>
+        </div>
+        
+        <div id="action-buttons">
+            <button class="atk-btn replay" onclick="executeAttack('REPLAY')">REPLAY_STRIKE</button>
+            <button class="atk-btn jam" onclick="executeAttack('JAM')">JAMMING_MODE</button>
+        </div>
+    </footer>
+
+    <script src="core.js"></script>
+    <script src="visualizer.js"></script>
+</body>
+</html>
+
