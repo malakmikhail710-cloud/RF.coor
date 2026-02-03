@@ -1,143 +1,187 @@
-/* STARK FRAMEWORK TACTICAL UI */
+/* STARK RF FRAMEWORK v5.5 - TACTICAL HUD DESIGN */
 
 :root {
-    --bg-color: #020202;
-    --primary-red: #ff0000;
+    --bg-dark: #050505;
+    --panel-bg: rgba(10, 10, 10, 0.9);
+    --stark-red: #ff0000;
     --stark-cyan: #00ffff;
+    --stark-gold: #ffcc00;
     --terminal-green: #00ff41;
-    --border-glow: rgba(255, 0, 0, 0.2);
+    --danger-glow: rgba(255, 0, 0, 0.4);
+    --scan-line: rgba(0, 255, 255, 0.03);
 }
+
+* { box-sizing: border-box; cursor: crosshair; }
 
 body {
-    background-color: var(--bg-color);
-    color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-dark);
+    background-image: linear-gradient(var(--scan-line) 50%, transparent 50%);
+    background-size: 100% 4px; /* تأثير خطوط المسح العسكرية */
+    color: #eee;
+    font-family: 'OCR A Extended', 'Courier New', monospace;
     margin: 0;
-    overflow: hidden; /* عشان الواجهة تبان كأنها شاشة رادار */
+    overflow: hidden;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    height: 100vh;
 }
 
-/* شريط الحالة العلوي */
+/* --- HEADER / TOP BAR --- */
 #top-bar {
+    height: 60px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    background: linear-gradient(90deg, #1a0000, #000);
-    border-bottom: 2px solid var(--primary-red);
-    box-shadow: 0 0 15px var(--border-glow);
+    padding: 0 25px;
+    background: black;
+    border-bottom: 2px solid var(--stark-red);
+    box-shadow: 0 5px 20px var(--danger-glow);
+    z-index: 100;
 }
 
 .logo {
-    font-weight: bold;
-    letter-spacing: 3px;
-    color: var(--primary-red);
-    text-shadow: 0 0 10px var(--primary-red);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--stark-red);
+    text-shadow: 0 0 10px var(--stark-red);
+    letter-spacing: 5px;
 }
 
-.stark-btn {
-    background: transparent;
-    border: 1px solid var(--stark-cyan);
-    color: var(--stark-cyan);
-    padding: 8px 15px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
+#conn-status {
+    font-size: 0.8rem;
+    margin-right: 20px;
+    letter-spacing: 2px;
 }
 
-.stark-btn:hover {
-    background: var(--stark-cyan);
-    color: black;
-    box-shadow: 0 0 20px var(--stark-cyan);
-}
-
-/* منطقة الجريد المركزية */
+/* --- TACTICAL GRID --- */
 #tactical-grid {
     flex: 1;
     display: flex;
-    padding: 10px;
-    gap: 10px;
+    padding: 15px;
+    gap: 15px;
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
 }
 
 .tower {
-    width: 60px;
-    border: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    width: 70px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #222;
     position: relative;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.tower-label {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-90deg);
-    font-size: 10px;
-    color: #666;
-    white-space: nowrap;
+    display: flex;
+    flex-direction: column-reverse; /* البناء من تحت لفوق */
+    box-shadow: inset 0 0 10px #000;
 }
 
 .tower-fill {
     width: 100%;
-    height: 0%; /* هيتحرك بالجافا سكريبت */
-    transition: height 0.1s ease;
+    transition: height 0.15s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+    filter: blur(1px);
 }
 
-#proto-fill { background: linear-gradient(to top, var(--stark-cyan), transparent); }
-#intensity-fill { background: linear-gradient(to top, var(--primary-red), transparent); }
+.tower-label {
+    position: absolute;
+    bottom: -25px;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: var(--stark-cyan);
+}
 
+/* --- WATERFALL CONTAINER --- */
 #waterfall-container {
     flex: 1;
-    border: 1px solid #222;
+    border: 1px solid #333;
+    position: relative;
     background: #000;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0,0,0,1);
 }
 
-#waterfall-canvas {
-    width: 100%;
-    height: 100%;
-}
-
-/* التيرمينال السفلي */
+/* --- CONTROL ZONE / TERMINAL --- */
 #control-zone {
-    height: 200px;
+    height: 250px;
+    background: #080808;
+    border-top: 1px solid #444;
     display: flex;
-    border-top: 1px solid #333;
-    background: #050505;
 }
 
 #mini-terminal {
-    flex: 2;
-    padding: 10px;
-    font-family: 'Consolas', monospace;
-    font-size: 12px;
-    color: var(--terminal-green);
+    flex: 3;
+    padding: 15px;
     overflow-y: auto;
-    border-right: 1px solid #333;
+    font-size: 13px;
+    border-right: 1px solid #222;
+    scroll-behavior: smooth;
 }
 
-#action-buttons {
-    flex: 1;
+/* ستايل سجلات الخزنة (The Vault Entries) */
+.vault-entry-row {
+    background: rgba(20, 20, 20, 0.8);
+    border-left: 3px solid var(--stark-cyan);
+    margin-bottom: 5px;
+    padding: 8px;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 20px;
-    gap: 15px;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideIn 0.3s ease-out;
+}
+
+.v-time { color: #555; font-size: 10px; }
+.v-id { color: var(--stark-gold); font-weight: bold; }
+.v-proto { color: var(--terminal-green); }
+
+/* --- BUTTONS --- */
+.stark-btn, .atk-btn, .v-action-btn {
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: 0.2s all;
+    outline: none;
 }
 
 .atk-btn {
-    height: 50px;
+    height: 60px;
+    margin: 5px;
     background: transparent;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
+    border: 1px solid var(--stark-red);
+    color: var(--stark-red);
 }
 
-.replay { border: 1px solid var(--stark-cyan); color: var(--stark-cyan); }
-.jam { border: 1px solid var(--primary-red); color: var(--primary-red); }
+.atk-btn:hover {
+    background: var(--stark-red);
+    color: white;
+    box-shadow: 0 0 20px var(--stark-red);
+}
 
-.replay:hover { background: var(--stark-cyan); color: black; }
-.jam:hover { background: var(--primary-red); color: black; }
+.v-action-btn {
+    background: #222;
+    border: 1px solid var(--stark-cyan);
+    color: var(--stark-cyan);
+    font-size: 10px;
+    padding: 4px 8px;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.pulse-animation {
+    animation: pulse-red 1s infinite;
+}
+
+@keyframes pulse-red {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+.danger-glow {
+    box-shadow: 0 0 30px var(--stark-red) !important;
+    background: rgba(255, 0, 0, 0.1) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
