@@ -1,15 +1,20 @@
-/* STARK RF CORE ENGINE v4.2 - PROFESSIONAL EDITION 
-   Engineered for High-Speed RF Analysis & Tactical Operations
+/* STARK RF CORE ENGINE v5.0 - TACTICAL MASTER EDITION 
+   Target: ESP32-C3 + HC-12 UART Transceiver
+   Logistics: Optimized for High-Speed Asynchronous Sniffing
 */
 
-// الحالة العامة للنظام (Global State)
 const STARK_SYSTEM = {
     port: null,
     reader: null,
     writer: null,
     isConnected: false,
-    buffer: "", // لتجميع البيانات المقطوعة
-    lastSignal: { hex: null, pulse: null, protocol: null }
+    buffer: "", 
+    lastSignal: { hex: null, pulse: null, protocol: null },
+    settings: {
+        minPulse: 50,
+        maxPulse: 2000,
+        squelch: true
+    }
 };
 
 const UI = {
@@ -18,10 +23,10 @@ const UI = {
     terminal: document.getElementById('mini-terminal')
 };
 
-// 1. محرك الاتصال المتقدم
+// 1. محرك الاتصال الاستراتيجي (Serial Initialization)
 UI.connectBtn.addEventListener('click', async () => {
     if (!('serial' in navigator)) {
-        logToTerminal("CRITICAL: BROWSER_INCOMPATIBLE_WITH_WEB_SERIAL", "error");
+        logToTerminal("CRITICAL: WEB_SERIAL_NOT_SUPPORTED_BY_HOST", "error");
         return;
     }
 
@@ -29,24 +34,26 @@ UI.connectBtn.addEventListener('click', async () => {
         STARK_SYSTEM.port = await navigator.serial.requestPort();
         await STARK_SYSTEM.port.open({ 
             baudRate: 921600, 
-            bufferSize: 255 // تحسين استهلاك الرامات للبيانات السريعة
+            dataBits: 8,
+            stopBits: 1,
+            parity: "none",
+            flowControl: "none"
         });
 
         STARK_SYSTEM.isConnected = true;
-        UI.status.innerText = "SYSTEM_ARMED";
-        UI.status.style.color = "#00ff41";
-        UI.status.classList.add('pulse-animation'); // إضافة تأثير نبض بالـ CSS
+        UI.status.innerText = "HARDWARE_STRIKE_LINK_ARMED";
+        UI.status.classList.add('danger-glow', 'pulse-animation');
         UI.connectBtn.style.display = "none";
 
-        logToTerminal("ENGINE_INITIALIZED: ADAPTER_LOCKED_921600_BAUD", "success");
+        logToTerminal("LINK_ESTABLISHED: ESP32-C3_LOCKED_@921600", "success");
         
         startListening();
     } catch (err) {
-        logToTerminal(`HARDWARE_LINK_FAILED: ${err}`, "error");
+        logToTerminal(`LINK_FAILURE: ${err.message}`, "error");
     }
 });
 
-// 2. محرك القراءة والتحليل الذكي (The Stream Processor)
+// 2. معالج التدفق الفائق (High-Speed Stream Processor)
 async function startListening() {
     while (STARK_SYSTEM.port.readable) {
         const textDecoder = new TextDecoderStream();
@@ -57,93 +64,107 @@ async function startListening() {
             while (true) {
                 const { value, done } = await STARK_SYSTEM.reader.read();
                 if (done) break;
-                if (value) {
-                    processIncomingData(value);
-                }
+                if (value) processBuffer(value);
             }
         } catch (error) {
-            logToTerminal(`STREAM_ERROR: ${error}`, "error");
+            logToTerminal(`INTERRUPT: STREAM_SYNC_LOST (${error})`, "error");
         } finally {
             STARK_SYSTEM.reader.releaseLock();
         }
     }
 }
 
-// 3. معالج البيانات الخام (Raw Data Parser)
-function processIncomingData(rawData) {
-    // تجميع البيانات في البافر للتعامل مع السطور المكسورة
-    STARK_SYSTEM.buffer += rawData;
-    let lines = STARK_SYSTEM.buffer.split("\n");
-    STARK_SYSTEM.buffer = lines.pop(); // الاحتفاظ بآخر سطر غير مكتمل
+// 3. مدير البافر (Buffer Control Unit)
+function processBuffer(data) {
+    STARK_SYSTEM.buffer += data;
+    let lines = STARK_SYSTEM.buffer.split(/\r?\n/);
+    STARK_SYSTEM.buffer = lines.pop(); // الحفاظ على بقايا السطر للمعالجة القادمة
 
     for (let line of lines) {
-        line = line.trim();
-        if (line.startsWith("DISC:")) {
-            handleSignalDiscovery(line);
-        } else if (line.startsWith("SYS:")) {
-            logToTerminal(`HARDWARE_LOG: ${line.substring(4)}`, "info");
+        const cleanLine = line.trim();
+        if (!cleanLine) continue;
+
+        // تحليل صيغة الـ ESP32-C3: DISC:HEX:PULSE
+        if (cleanLine.startsWith("DISC:")) {
+            parseRFSignal(cleanLine);
+        } else if (cleanLine.startsWith("[TX]")) {
+            logToTerminal(cleanLine, "success"); // تأكيد الإرسال من الهاردوير
+        } else if (cleanLine.includes("[STATUS]")) {
+            logToTerminal(`HW_STATUS: ${cleanLine}`, "info");
         }
     }
 }
 
-// 4. تحليل الإشارة (Signal Intelligence)
-function handleSignalDiscovery(line) {
-    // DISC:HEX_DATA:PULSE_WIDTH
-    const [_, hex, pulse] = line.split(":");
-    
-    if (hex && pulse) {
-        const pulseInt = parseInt(pulse);
-        const protocol = identifyProtocol(pulseInt);
+// 4. محلل الإشارات التكتيكي (Signal Intelligence Parser)
+function parseRFSignal(data) {
+    const parts = data.split(":");
+    if (parts.length < 3) return;
 
-        STARK_SYSTEM.lastSignal = { hex, pulse: pulseInt, protocol };
+    const hexCode = parts[1].toUpperCase();
+    const pulseWidth = parseInt(parts[2]);
 
-        // تحديث الواجهة الرسومية
-        logToTerminal(`SIGNAL_INTERCEPTED: [${protocol}] ID:${hex} PW:${pulse}us`, "intercept");
-        
-        // ربط المحركات الأخرى
-        if (window.pushToWaterfall) window.pushToWaterfall(pulseInt);
-        if (window.Vault) window.Vault.saveSignal(hex, pulseInt, protocol);
-        
-        updateVisualTowers(pulseInt);
+    // نظام الـ Squelch للتصفية
+    if (STARK_SYSTEM.settings.squelch) {
+        if (pulseWidth < STARK_SYSTEM.settings.minPulse || pulseWidth > STARK_SYSTEM.settings.maxPulse) {
+            return; // تجاهل النويز
+        }
     }
+
+    const proto = identifyProtocol(pulseWidth);
+    STARK_SYSTEM.lastSignal = { hex: hexCode, pulse: pulseWidth, protocol: proto };
+
+    // التوجيه للمحركات المتصلة (Waterfall & Vault)
+    logToTerminal(`CAPTURED: [${proto}] ID:0x${hexCode} PW:${pulseWidth}us`, "intercept");
+    
+    // حقن البيانات في النظام المرئي
+    if (window.pushToWaterfall) window.pushToWaterfall(pulseWidth);
+    if (window.Vault) window.Vault.saveSignal(hexCode, pulseWidth, proto);
+    
+    triggerTacticalHUD(pulseWidth, proto);
 }
 
-// 5. محرك التعرف على البروتوكولات (Protocol Identification)
+// 5. محرك التمييز (Protocol Signature Recognition)
 function identifyProtocol(pulse) {
-    if (pulse > 300 && pulse < 450) return "EV1527_STD";
-    if (pulse >= 450 && pulse < 600) return "PT2262_ENHANCED";
-    if (pulse > 800) return "SUB_GHZ_RAW";
-    return "UNKNOWN_RF";
+    // بناءً على كود الـ SignalAnalyzer في الـ ESP32
+    if (pulse >= 250 && pulse <= 400) return "SC2262_FIXED";
+    if (pulse > 400 && pulse <= 650) return "EV1527_LEARNING";
+    if (pulse > 650 && pulse <= 950) return "HT6P20_PROTO";
+    return "RAW_RF_STRIKE";
 }
 
-// 6. التيرمينال التكتيكي (Advanced Logging)
+// 6. نظام التيرمينال (Advanced Tactical Logger)
 function logToTerminal(msg, type = "info") {
-    const line = document.createElement('div');
-    line.className = `log-line type-${type}`;
-    const timestamp = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    const entry = document.createElement('div');
+    entry.className = `log-line type-${type}`;
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false, fractionDigits: 2 });
     
-    let prefix = "[#] ";
-    if (type === "error") prefix = "[!] ";
-    if (type === "intercept") prefix = "[>>>] ";
-    if (type === "success") prefix = "[OK] ";
+    let icon = "⚙️";
+    if (type === "error") icon = "❌";
+    if (type === "intercept") icon = "📡";
+    if (type === "success") icon = "✅";
 
-    line.innerText = `${timestamp} ${prefix}${msg}`;
-    UI.terminal.appendChild(line);
+    entry.innerHTML = `<span class="t-stamp">${time}</span> <span class="t-icon">${icon}</span> ${msg}`;
+    UI.terminal.appendChild(entry);
     
-    // Auto-scroll ذكي
-    if (UI.terminal.childNodes.length > 100) UI.terminal.removeChild(UI.terminal.firstChild);
+    // إدارة سعة التيرمينال لضمان السرعة
+    if (UI.terminal.childNodes.length > 150) UI.terminal.removeChild(UI.terminal.firstChild);
     UI.terminal.scrollTop = UI.terminal.scrollHeight;
 }
 
-// 7. تحديث الأبراج (GPU Accelerated Update)
-function updateVisualTowers(pulse) {
-    const intensity = Math.min((pulse / 1200) * 100, 100);
+// 7. تحديث الـ HUD (Hardware Status Feedback)
+function triggerTacticalHUD(pulse, proto) {
     const intensityFill = document.getElementById('intensity-fill');
     const protoFill = document.getElementById('proto-fill');
-
-    if (intensityFill) intensityFill.style.height = `${intensity}%`;
+    
+    const height = Math.min((pulse / 1000) * 100, 100);
+    
+    if (intensityFill) {
+        intensityFill.style.height = `${height}%`;
+        intensityFill.style.filter = `hue-rotate(${height}deg)`; // تغيير اللون بناء على القوة
+    }
+    
     if (protoFill) {
         protoFill.style.height = "100%";
-        setTimeout(() => protoFill.style.height = "0%", 150); // Flash effect
+        setTimeout(() => protoFill.style.height = "0%", 100);
     }
 }
