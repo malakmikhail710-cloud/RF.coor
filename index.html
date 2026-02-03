@@ -3,14 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STARK RF | TACTICAL C2 FRAMEWORK</title>
+    <title>STARK RF | TACTICAL C2 PANEL</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        /* إضافة ستايل سريع للـ Overlay داخل الـ HTML لضمان ظهوره فوق الكانفاس */
+        #canvas-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* عشان ميعطلش الكانفاس */
+            border: 1px solid rgba(0, 255, 255, 0.1);
+        }
+        .scanner-line {
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 255, 0.2);
+            position: absolute;
+            top: 0;
+            box-shadow: 0 0 15px var(--stark-cyan);
+            animation: scanMove 4s linear infinite;
+        }
+        .coordinate-tag {
+            position: absolute;
+            bottom: 10px; right: 10px;
+            font-size: 10px; color: var(--stark-cyan);
+            background: rgba(0,0,0,0.5); padding: 2px 5px;
+        }
+        @keyframes scanMove {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+    </style>
 </head>
 <body>
 
     <header id="top-bar">
-        <div class="logo">STARK_RF_OS_V5</div>
+        <div class="logo">STARK_RF_OS_V6</div>
         <div class="system-status">
             <span id="conn-status">LINK_OFFLINE</span>
             <button id="connect-btn" class="stark-btn">INITIALIZE ADAPTER</button>
@@ -28,7 +57,7 @@
             
             <div id="canvas-overlay">
                 <div class="scanner-line"></div>
-                <div class="coordinate-tag">FREQ: 433.92MHz</div>
+                <div class="coordinate-tag">CENTER: 433.920 MHz</div>
             </div>
         </section>
 
@@ -40,9 +69,7 @@
 
     <footer id="control-zone">
         <div id="mini-terminal">
-            <div class="log-line type-success">>> STARK_SYSTEM_BOOT_SEQUENCE_COMPLETE</div>
-            <div class="log-line">>> WAITING_FOR_HARDWARE_STRIKE_LINK...</div>
-        </div>
+            </div>
         
         <div id="action-buttons">
             <button class="atk-btn replay" onclick="executeAttack('REPLAY')">
@@ -51,9 +78,11 @@
             <button class="atk-btn jam" id="jam-btn" onclick="executeAttack('JAM')">
                 <span class="btn-icon">🚫</span> TAC_JAMMER
             </button>
-            <button class="v-action-btn" onclick="Vault.wipeAll()" style="margin-top: 10px; border-color: #444; color: #666;">
-                PURGE_VAULT
-            </button>
+            
+            <div style="display: flex; gap: 5px;">
+                <button class="v-action-btn" onclick="Vault.exportJSON()" style="flex:1;">EXPORT_INTEL</button>
+                <button class="v-action-btn" onclick="Vault.purge()" style="flex:1; border-color: #444; color: #666;">WIPE_VAULT</button>
+            </div>
         </div>
     </footer>
 
