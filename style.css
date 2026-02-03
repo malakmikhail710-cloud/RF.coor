@@ -1,0 +1,143 @@
+/* STARK FRAMEWORK TACTICAL UI */
+
+:root {
+    --bg-color: #020202;
+    --primary-red: #ff0000;
+    --stark-cyan: #00ffff;
+    --terminal-green: #00ff41;
+    --border-glow: rgba(255, 0, 0, 0.2);
+}
+
+body {
+    background-color: var(--bg-color);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    overflow: hidden; /* عشان الواجهة تبان كأنها شاشة رادار */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* شريط الحالة العلوي */
+#top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #1a0000, #000);
+    border-bottom: 2px solid var(--primary-red);
+    box-shadow: 0 0 15px var(--border-glow);
+}
+
+.logo {
+    font-weight: bold;
+    letter-spacing: 3px;
+    color: var(--primary-red);
+    text-shadow: 0 0 10px var(--primary-red);
+}
+
+.stark-btn {
+    background: transparent;
+    border: 1px solid var(--stark-cyan);
+    color: var(--stark-cyan);
+    padding: 8px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.stark-btn:hover {
+    background: var(--stark-cyan);
+    color: black;
+    box-shadow: 0 0 20px var(--stark-cyan);
+}
+
+/* منطقة الجريد المركزية */
+#tactical-grid {
+    flex: 1;
+    display: flex;
+    padding: 10px;
+    gap: 10px;
+}
+
+.tower {
+    width: 60px;
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tower-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+}
+
+.tower-fill {
+    width: 100%;
+    height: 0%; /* هيتحرك بالجافا سكريبت */
+    transition: height 0.1s ease;
+}
+
+#proto-fill { background: linear-gradient(to top, var(--stark-cyan), transparent); }
+#intensity-fill { background: linear-gradient(to top, var(--primary-red), transparent); }
+
+#waterfall-container {
+    flex: 1;
+    border: 1px solid #222;
+    background: #000;
+}
+
+#waterfall-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* التيرمينال السفلي */
+#control-zone {
+    height: 200px;
+    display: flex;
+    border-top: 1px solid #333;
+    background: #050505;
+}
+
+#mini-terminal {
+    flex: 2;
+    padding: 10px;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    color: var(--terminal-green);
+    overflow-y: auto;
+    border-right: 1px solid #333;
+}
+
+#action-buttons {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px;
+    gap: 15px;
+}
+
+.atk-btn {
+    height: 50px;
+    background: transparent;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.replay { border: 1px solid var(--stark-cyan); color: var(--stark-cyan); }
+.jam { border: 1px solid var(--primary-red); color: var(--primary-red); }
+
+.replay:hover { background: var(--stark-cyan); color: black; }
+.jam:hover { background: var(--primary-red); color: black; }
